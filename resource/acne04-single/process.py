@@ -5,11 +5,11 @@
 ##
 import os
 import shutil
-import numpy
-import pandas
 import PIL.Image
 import xml.etree.ElementTree
 import tqdm
+import re
+import sklearn.model_selection
 
 ##
 folder = 'resource/acne04-default/'
@@ -41,3 +41,40 @@ for i in  tqdm.tqdm(loop):
         continue
     
     continue
+
+##
+nest = 'resource/acne04-single/jpg/'
+level = os.listdir(nest)
+data = []
+for l in level:
+
+    h = os.path.join(nest, l)
+    data += [os.path.join(h, t).replace('\\', '/') for t in os.listdir(h)]
+    continue
+
+data = sorted(data)
+
+##
+train, group = sklearn.model_selection.train_test_split(data, test_size=0.2, random_state=0)
+validation, test = sklearn.model_selection.train_test_split(group, test_size=0.5, random_state=0)
+train[:6]
+validation[:6]
+test[:6]
+pair = zip(['train', "validation", 'test'], [train, validation, test])
+for mode, loop in pair:
+    
+    head = os.path.join('resource/acne04-single', mode)
+    os.makedirs(head, exist_ok=True)
+    for i in tqdm.tqdm(loop):
+        
+        name = re.split('/', i)[-1]
+        level = re.split('/', i)[-2]
+        body = os.path.join(head, level).replace('\\', '/')
+        os.makedirs(body, exist_ok=True)
+        foot = os.path.join(body, name).replace('\\', '/')
+        _ = shutil.copy(i, foot)
+        continue
+    
+    continue
+
+

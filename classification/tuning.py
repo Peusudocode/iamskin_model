@@ -6,11 +6,11 @@ import os
 import tensorflow
 from sklearn import metrics
 from tensorflow import keras
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 if(tensorflow.test.is_gpu_available()): print("the GPU available")
 
 ##  Constant of configuration.
-dataset = 'acne-type'
+dataset = 'acne04-single'
 batch_size   = 32
 train_dir  = './resource/{}/train'.format(dataset)
 val_dir    = './resource/{}/validation'.format(dataset)
@@ -18,16 +18,18 @@ test_dir   = './resource/{}/test'.format(dataset)
 image_shape      = (224, 224)
 epochs         = 10
 seen_class_num = 4
-class_name     = ['levle0', 'levle1', 'levle2', 'levle3']
+# class_name     = ['levle0', 'levle1', 'levle2', 'levle3']
 
 ##  Create data generator function.
-def create_ImageDataGenerator(data_dir, batch_size):
+def create_ImageDataGenerator(data_dir, batch_size, shuffle=True):
 
-    image_gen = keras.ImageDataGenerator(preprocessing_function=keras.preprocess_input)
+    image_gen = keras.preprocessing.image.ImageDataGenerator(
+        preprocessing_function=keras.applications.resnet.preprocess_input
+    )
     data_gen = image_gen.flow_from_directory(
             batch_size=batch_size,
             directory=data_dir,
-            shuffle=True,
+            shuffle=shuffle,
             color_mode="rgb",
             target_size=image_shape,
             class_mode='categorical',
@@ -37,14 +39,52 @@ def create_ImageDataGenerator(data_dir, batch_size):
     return(data_gen)
 
 ##  Create data generator respectively.
-image_gen_train = create_ImageDataGenerator(data_dir = train_dir, batch_size=batch_size)
-image_gen_val   = create_ImageDataGenerator(data_dir = val_dir  , batch_size=batch_size)
-image_gen_test  = create_ImageDataGenerator(data_dir = test_dir , batch_size=batch_size)
+image_gen_train = create_ImageDataGenerator(data_dir = train_dir, batch_size=batch_size,shuffle=True)
+image_gen_val   = create_ImageDataGenerator(data_dir = val_dir  , batch_size=batch_size,shuffle=False)
+image_gen_test  = create_ImageDataGenerator(data_dir = test_dir , batch_size=batch_size,shuffle=False)
 
-next(iter(image_gen_train))
+##
+def create_model(pretrained_model='resnet'):
 
-base_model = ResNet101(weights = 'imagenet', include_top = False)
+    if(pretrained_model=='resnet'):
+        
+        base_model = keras.applications.resnet.ResNet101(weights = 'imagenet', include_top = False)
+        # hidden_size = base_model.output.shape[-1]
+        hidden_out = base_model.output 
+        hidden_out = keras.layers.GlobalAveragePooling2D()(hidden_out) # 2048 # -3
+        hidden_out = keras.layers.Dense(1024, activation='relu')(hidden_out) # -2 
+        predictions = keras.layers.Dense(seen_class_num, activation='softmax')(hidden_out) # -1
+        model = keras.models.Model(inputs=base_model.input, outputs=predictions)
+        pass
 
+    return(model)
+
+model = create_model(pretrained_model='resnet')
+
+optimizer = keras.optimizers.Adam(
+    learning_rate=0.0001, 
+    beta_1=0.9, beta_2=0.999, 
+    epsilon=None, decay=0.0, amsgrad=False
+)
+model.compile(
+    optimizer=optimizer, 
+    loss='categorical_crossentropy', 
+    metrics=['accuracy']
+)
+
+early_stopping  = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+step_size_train = image_gen_train.n // image_gen_train.batch_size
+step_size_val  = image_gen_val.n // image_gen_val.batch_size
+
+model.fit(
+    image_gen_train,
+    # steps_per_epoch=step_size_train, ## try ignore
+    epochs = epochs,
+    validation_data=image_gen_val,
+    # validation_steps=step_size_val, ## try ignore
+    # class_weight=class_weights,
+    callbacks = [early_stopping]    
+)
 # image_gen_val = ImageDataGenerator(preprocessing_function=preprocess_input)
 # val_data_gen = image_gen_val.flow_from_directory(
 #     batch_size=batch_size,
@@ -113,7 +153,7 @@ base_model = ResNet101(weights = 'imagenet', include_top = False)
 # base_model_defualt
 # base_model_defualt.summary()
 
-base_model = ResNet101(weights = 'imagenet', include_top = False)
+# base_model = ResNet101(weights = 'imagenet', include_top = False)
 # base_model.summary()
 # base_model_name = "resnet"
 
@@ -132,54 +172,59 @@ base_model = ResNet101(weights = 'imagenet', include_top = False)
 # x_demo.shape
 
 ##  Add a global averge polling layer.
-x = base_model.output 
-x = GlobalAveragePooling2D()(x) # 2048 # -3
+# x = base_model.output 
+# x = GlobalAveragePooling2D()(x) # 2048 # -3
 
-##  Add a dense layer.
-x = Dense(1024, activation='relu')(x) # -2 
+# ##  Add a dense layer.
+# x = Dense(1024, activation='relu')(x) # -2 
 
-##  Add a classifier.
-predictions = Dense(seen_class_num, activation='softmax')(x) # -1
+# ##  Add a classifier.
+# predictions = Dense(seen_class_num, activation='softmax')(x) # -1
 
-##  Constructure
-model = Model(inputs=base_model.input, outputs=predictions)
+# ##  Constructure
+# model = Model(inputs=base_model.input, outputs=predictions)
 
 ##  Optimizer.
-optimizer = Adam(
-    learning_rate=0.0001, beta_1=0.9, beta_2=0.999, 
-    epsilon=None, decay=0.0, amsgrad=False
-)
+# optimizer = Adam(
+#     learning_rate=0.0001, beta_1=0.9, beta_2=0.999, 
+#     epsilon=None, decay=0.0, amsgrad=False
+# )
 
 
-##  Complie.
-model.compile(
-    optimizer=optimizer, 
-    loss='categorical_crossentropy', 
-    metrics=['accuracy']
-)
+# ##  Complie.
+# model.compile(
+#     optimizer=optimizer, 
+#     loss='categorical_crossentropy', 
+#     metrics=['accuracy']
+# )
 
-##  Early stop setting
-early_stopping  = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-STEP_SIZE_TRAIN = train_data_gen.n // train_data_gen.batch_size
-STEP_SIZE_VALID = val_data_gen.n // val_data_gen.batch_size
+# ##  Early stop setting
+# early_stopping  = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+# STEP_SIZE_TRAIN = train_data_gen.n // train_data_gen.batch_size
+# STEP_SIZE_VALID = val_data_gen.n // val_data_gen.batch_size
 
 ##
-model.fit(
-    train_data_gen,
-    steps_per_epoch=STEP_SIZE_TRAIN,
-    epochs = epochs,
-    validation_data=val_data_gen,
-    validation_steps=STEP_SIZE_VALID,
-    # class_weight=class_weights,
-    callbacks = [early_stopping]    
-)
+# model.fit(
+#     train_data_gen,
+#     steps_per_epoch=STEP_SIZE_TRAIN,
+#     epochs = epochs,
+#     validation_data=val_data_gen,
+#     validation_steps=STEP_SIZE_VALID,
+#     # class_weight=class_weights,
+#     callbacks = [early_stopping]    
+# )
 
 ## --- 0729 checkpoint
 
+n_batches = len(image_gen_train)
+x1 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
+x2 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
+
+
 ##  Val confusion matrix.
-n_batches = len(val_data_gen)
+n_batches = len(image_gen_val)
 val_con_matrix = confusion_matrix(
-    numpy.concatenate([numpy.argmax(val_data_gen[i][1], axis=1) for i in range(n_batches)]),
+    numpy.concatenate([numpy.argmax(image_gen_val[i][1], axis=1) for i in range(n_batches)]),
     numpy.argmax(model.predict(val_data_gen, steps=n_batches), axis=1) 
 )
 val_con_matrix = pandas.DataFrame(val_con_matrix)
