@@ -14,7 +14,7 @@
 !/resource/acne04-single/jpg/level3/level3_0-1.jpg
 !/resource/*process.py
 !/resource/*information.txt
-/resource/*
+/resource/
 *.tar
 
 # Byte-compiled / optimized / DLL files
