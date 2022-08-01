@@ -1,5 +1,4 @@
 #
-/resource/*
 !/resource/acne04-default/*.txt
 !/resource/acne04-default/jpg/level0_0.jpg
 !/resource/acne04-default/jpg/level1_174.jpg
@@ -15,6 +14,7 @@
 !/resource/acne04-single/jpg/level3/level3_0-1.jpg
 !/resource/*process.py
 !/resource/*information.txt
+/resource/*
 *.tar
 
 # Byte-compiled / optimized / DLL files
