@@ -85,6 +85,10 @@ model.fit(
     # class_weight=class_weights,
     callbacks = [early_stopping]    
 )
+
+##  2022/08/01
+##  Checkpoint
+
 # image_gen_val = ImageDataGenerator(preprocessing_function=preprocess_input)
 # val_data_gen = image_gen_val.flow_from_directory(
 #     batch_size=batch_size,
