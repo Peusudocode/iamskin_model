@@ -3,52 +3,82 @@
 import pandas
 import numpy 
 import os
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-
-##  The tensorflow modules.
 import tensorflow
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.applications.resnet import ResNet101, preprocess_input
-from tensorflow.keras.applications import DenseNet121, MobileNetV2
-# from tensorflow.keras.applications.efficientnet import EfficientNetB0
-# from efficientnet.tfkeras import EfficientNetB0
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from sklearn import metrics
+from tensorflow import keras
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+if(tensorflow.test.is_gpu_available()): print("the GPU available")
 
-'''
-給定 pre-trained 模型, 針對特定資料集執行 fine-tuning 訓練. 
-'''
-
-print("the GPU available") if(tensorflow.test.is_gpu_available()) else print("the GPU not available")
-
-##  The paths.
-dataset = 'ic'
-batch_size = 27
+##  Constant of configuration.
+dataset = 'acne-type'
+batch_size   = 32
 train_dir  = './resource/{}/train'.format(dataset)
 val_dir    = './resource/{}/validation'.format(dataset)
 test_dir   = './resource/{}/test'.format(dataset)
-
-##  The config of data.
-IMG_SHAPE      = 224
+image_shape      = (224, 224)
 epochs         = 10
 seen_class_num = 4
 class_name     = ['levle0', 'levle1', 'levle2', 'levle3']
 
+##  Create data generator function.
+def create_ImageDataGenerator(data_dir, batch_size):
+
+    image_gen = keras.ImageDataGenerator(preprocessing_function=keras.preprocess_input)
+    data_gen = image_gen.flow_from_directory(
+            batch_size=batch_size,
+            directory=data_dir,
+            shuffle=True,
+            color_mode="rgb",
+            target_size=image_shape,
+            class_mode='categorical',
+            seed = 42
+        )
+
+    return(data_gen)
+
+##  Create data generator respectively.
+image_gen_train = create_ImageDataGenerator(data_dir = train_dir, batch_size=batch_size)
+image_gen_val   = create_ImageDataGenerator(data_dir = val_dir  , batch_size=batch_size)
+image_gen_test  = create_ImageDataGenerator(data_dir = test_dir , batch_size=batch_size)
+
+next(iter(image_gen_train))
+
+base_model = ResNet101(weights = 'imagenet', include_top = False)
+
+# image_gen_val = ImageDataGenerator(preprocessing_function=preprocess_input)
+# val_data_gen = image_gen_val.flow_from_directory(
+#     batch_size=batch_size,
+#     directory=val_dir,
+#     target_size=(IMG_SHAPE, IMG_SHAPE),
+#     class_mode='categorical',
+#     color_mode="rgb",
+#     seed = 42
+# )
+
+# from sklearn.metrics import confusion_matrix
+# from sklearn.metrics import classification_report
+
+# from tensorflow.keras.optimizers import Adam
+# from tensorflow.keras.applications.resnet import ResNet101, preprocess_input
+# from tensorflow.keras.applications import DenseNet121, MobileNetV2
+# # from tensorflow.keras.applications.efficientnet import EfficientNetB0
+# # from efficientnet.tfkeras import EfficientNetB0
+# from tensorflow.keras.models import Model
+# from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+# from tensorflow.keras.callbacks import EarlyStopping
+# from tensorflow.keras.preprocessing.image import ImageDataGenerator
+ 
+
+# '''
+# 給定 pre-trained 模型, 針對特定資料集執行 fine-tuning 訓練. 
+# '''
+
+
+
+
+
 ##  Train generator.
-image_gen = ImageDataGenerator(preprocessing_function=preprocess_input)
-train_data_gen = image_gen.flow_from_directory(
-        batch_size=batch_size,
-        directory=train_dir,
-        shuffle=True,
-        color_mode="rgb",
-        target_size=(IMG_SHAPE,IMG_SHAPE),
-        class_mode='categorical',
-        seed = 42
-    )
+
 # train_data_gen.class_indices
 # batch = next(iter(train_data_gen))
 # x, y = batch
@@ -56,26 +86,26 @@ train_data_gen = image_gen.flow_from_directory(
 # y.shape
 
 ##  Val generator.
-image_gen_val = ImageDataGenerator(preprocessing_function=preprocess_input)
-val_data_gen = image_gen_val.flow_from_directory(
-    batch_size=batch_size,
-    directory=val_dir,
-    target_size=(IMG_SHAPE, IMG_SHAPE),
-    class_mode='categorical',
-    color_mode="rgb",
-    seed = 42
-)
+# image_gen_val = ImageDataGenerator(preprocessing_function=preprocess_input)
+# val_data_gen = image_gen_val.flow_from_directory(
+#     batch_size=batch_size,
+#     directory=val_dir,
+#     target_size=(IMG_SHAPE, IMG_SHAPE),
+#     class_mode='categorical',
+#     color_mode="rgb",
+#     seed = 42
+# )
 
 ##  Test generator.
-image_gen_test = ImageDataGenerator(preprocessing_function=preprocess_input)
-test_data_gen = image_gen_test.flow_from_directory(
-    batch_size=batch_size,
-    directory=test_dir,
-    target_size=(IMG_SHAPE, IMG_SHAPE),
-    class_mode='categorical',
-    color_mode="rgb",
-    seed = 42
-)
+# image_gen_test = ImageDataGenerator(preprocessing_function=preprocess_input)
+# test_data_gen = image_gen_test.flow_from_directory(
+#     batch_size=batch_size,
+#     directory=test_dir,
+#     target_size=(IMG_SHAPE, IMG_SHAPE),
+#     class_mode='categorical',
+#     color_mode="rgb",
+#     seed = 42
+# )
 
 
 ##  Model without output layer.

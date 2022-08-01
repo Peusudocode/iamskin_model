@@ -1,5 +1,22 @@
 #
 resource/
+*.tar
+!resource/acne04-default/*.txt
+!resource/acne04-default/jpg/level0_0.jpg
+!resource/acne04-default/jpg/level1_174.jpg
+!resource/acne04-default/jpg/level2_2.jpg
+!resource/acne04-default/jpg/level3_15.jpg
+!resource/acne04-default/xml/level0_0.xml
+!resource/acne04-default/xml/level1_174.xml
+!resource/acne04-default/xml/level2_2.xml
+!resource/acne04-default/xml/level3_15.xml
+!resource/acne04-single/jpg/level0/level0_0-1.jpg
+!resource/acne04-single/jpg/level1/level1_0-1.jpg
+!resource/acne04-single/jpg/level2/level2_0-5.jpg
+!resource/acne04-single/jpg/level3/level3_0-1.jpg
+!resource/*process.py
+!resource/*information.txt
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
