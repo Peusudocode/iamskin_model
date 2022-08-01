@@ -1,5 +1,5 @@
 #
-resource/
+/resource/
 !resource/acne04-default/*.txt
 !resource/acne04-default/jpg/level0_0.jpg
 !resource/acne04-default/jpg/level1_174.jpg
