@@ -1,13 +1,13 @@
 
 ##  The packages.
+import os
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 import pandas
 import numpy 
-import os
 import tensorflow
 from sklearn import metrics
 from tensorflow import keras
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-if(tensorflow.test.is_gpu_available()): print("the GPU available")
 
 ##  Constant of configuration.
 dataset = 'acne04-single'
@@ -16,9 +16,9 @@ train_dir  = './resource/{}/train'.format(dataset)
 val_dir    = './resource/{}/validation'.format(dataset)
 test_dir   = './resource/{}/test'.format(dataset)
 image_shape      = (224, 224)
-epochs         = 10
+epochs         = 1
 seen_class_num = 4
-# class_name     = ['levle0', 'levle1', 'levle2', 'levle3']
+class_name     = ['levle0', 'levle1', 'levle2', 'levle3']
 
 ##  Create data generator function.
 def create_ImageDataGenerator(data_dir, batch_size, shuffle=True):
@@ -85,6 +85,76 @@ model.fit(
     # class_weight=class_weights,
     callbacks = [early_stopping]    
 )
+
+# n_batches = len(image_gen_train)
+# x1 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
+# x2 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
+
+def get_confusion_table(image_gen):
+
+    n_batches = len(image_gen)
+    y_true = numpy.concatenate([numpy.argmax(image_gen[i][1], axis=1) for i in range(n_batches)])
+    y_score = numpy.argmax(model.predict(image_gen, steps=n_batches), axis=1) 
+    con_matrix = metrics.confusion_matrix(y_true, y_score)
+    con_matrix = pandas.DataFrame(con_matrix)
+    con_report = metrics.classification_report(y_true, y_score)
+    return(con_matrix, con_report)
+
+val_con_matrix, val_con_report = get_confusion_table(image_gen_val)
+print('-'*10, 'validation', '-'*10)
+print(val_con_matrix)
+print(val_con_report)
+
+test_con_matrix, test_con_report = get_confusion_table(image_gen_test)
+print('-'*10, 'test', '-'*10)
+print(test_con_matrix)
+print(test_con_report)
+
+##
+base_model_name = "resnet"
+os.makedirs("./model/{}/".format(dataset), exist_ok=True)
+model.save('./model/{}/FineTune[{}]Classifier.h5'.format(dataset, base_model_name))
+backbone_layer_model = keras.Model(model.inputs, model.layers[-3].output)
+backbone_layer_model.save('./model/{}/FineTune[{}]Backbone.h5'.format(dataset, base_model_name))
+
+
+
+# ##  Val confusion matrix.
+# n_batches = len(image_gen_val)
+# val_con_matrix = metrics.confusion_matrix(
+#     numpy.concatenate([numpy.argmax(image_gen_val[i][1], axis=1) for i in range(n_batches)]),
+#     numpy.argmax(model.predict(image_gen_val, steps=n_batches), axis=1) 
+# )
+# val_con_matrix = pandas.DataFrame(val_con_matrix)
+
+# ##  View the val result.
+# val_report = metrics.classification_report(
+#     numpy.concatenate([numpy.argmax(image_gen_val[i][1], axis=1) for i in range(n_batches)]), 
+#     numpy.argmax(model.predict(image_gen_val, steps=n_batches), axis=1), 
+#     target_names=class_name
+# )
+# print(val_report)
+
+# ##  Test confusion matrix.
+# n_batches = len(image_gen_test)
+# test_con_matrix = metrics.confusion_matrix(
+#     numpy.concatenate([numpy.argmax(image_gen_test[i][1], axis=1) for i in range(n_batches)]),
+#     numpy.argmax(model.predict(image_gen_test, steps=n_batches), axis=1) 
+# )
+# test_con_matrix = pandas.DataFrame(test_con_matrix)
+
+# ##  The test report.
+# test_report = metrics.classification_report(
+#     numpy.concatenate([numpy.argmax(image_gen_test[i][1], axis=1) for i in range(n_batches)]), 
+#     numpy.argmax(model.predict(image_gen_test, steps=n_batches), axis=1), 
+#     target_names=class_name
+# )
+# print(test_report)
+
+##  Save the original find-tuned model.
+# model.save('./model/{}/FineTuneResNet101_original.h5'.format(dataset))
+
+
 
 ##  2022/08/01
 ##  Checkpoint
@@ -220,53 +290,53 @@ model.fit(
 
 ## --- 0729 checkpoint
 
-n_batches = len(image_gen_train)
-x1 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
-x2 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
+# n_batches = len(image_gen_train)
+# x1 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
+# x2 = numpy.concatenate([numpy.argmax(image_gen_train[i][1], axis=1) for i in range(n_batches)])
 
 
-##  Val confusion matrix.
-n_batches = len(image_gen_val)
-val_con_matrix = confusion_matrix(
-    numpy.concatenate([numpy.argmax(image_gen_val[i][1], axis=1) for i in range(n_batches)]),
-    numpy.argmax(model.predict(val_data_gen, steps=n_batches), axis=1) 
-)
-val_con_matrix = pandas.DataFrame(val_con_matrix)
+# ##  Val confusion matrix.
+# n_batches = len(image_gen_val)
+# val_con_matrix = confusion_matrix(
+#     numpy.concatenate([numpy.argmax(image_gen_val[i][1], axis=1) for i in range(n_batches)]),
+#     numpy.argmax(model.predict(val_data_gen, steps=n_batches), axis=1) 
+# )
+# val_con_matrix = pandas.DataFrame(val_con_matrix)
 
-##  View the val result.
-val_report = classification_report(
-    numpy.concatenate([numpy.argmax(val_data_gen[i][1], axis=1) for i in range(n_batches)]), 
-    numpy.argmax(model.predict(val_data_gen, steps=n_batches), axis=1), 
-    target_names=class_name
-)
-print(val_report)
+# ##  View the val result.
+# val_report = classification_report(
+#     numpy.concatenate([numpy.argmax(val_data_gen[i][1], axis=1) for i in range(n_batches)]), 
+#     numpy.argmax(model.predict(val_data_gen, steps=n_batches), axis=1), 
+#     target_names=class_name
+# )
+# print(val_report)
 
-##  Test confusion matrix.
-n_batches = len(test_data_gen)
-test_con_matrix = confusion_matrix(
-    numpy.concatenate([numpy.argmax(test_data_gen[i][1], axis=1) for i in range(n_batches)]),
-    numpy.argmax(model.predict(test_data_gen, steps=n_batches), axis=1) 
-)
-test_con_matrix = pandas.DataFrame(test_con_matrix)
+# ##  Test confusion matrix.
+# n_batches = len(test_data_gen)
+# test_con_matrix = confusion_matrix(
+#     numpy.concatenate([numpy.argmax(test_data_gen[i][1], axis=1) for i in range(n_batches)]),
+#     numpy.argmax(model.predict(test_data_gen, steps=n_batches), axis=1) 
+# )
+# test_con_matrix = pandas.DataFrame(test_con_matrix)
 
-##  The test report.
-test_report = classification_report(
-    numpy.concatenate([numpy.argmax(test_data_gen[i][1], axis=1) for i in range(n_batches)]), 
-    numpy.argmax(model.predict(test_data_gen, steps=n_batches), axis=1), 
-    target_names=class_name
-)
-print(test_report)
+# ##  The test report.
+# test_report = classification_report(
+#     numpy.concatenate([numpy.argmax(test_data_gen[i][1], axis=1) for i in range(n_batches)]), 
+#     numpy.argmax(model.predict(test_data_gen, steps=n_batches), axis=1), 
+#     target_names=class_name
+# )
+# print(test_report)
 
-##  Save the original find-tuned model.
-# model.save('./model/{}/FineTuneResNet101_original.h5'.format(dataset))
+# ##  Save the original find-tuned model.
+# # model.save('./model/{}/FineTuneResNet101_original.h5'.format(dataset))
 
-##
-os.makedirs("./model/{}/".format(dataset), exist_ok=True)
-model.save('./model/{}/FineTune[{}]Classifier.h5'.format(dataset, base_model_name))
+# ##
+# os.makedirs("./model/{}/".format(dataset), exist_ok=True)
+# model.save('./model/{}/FineTune[{}]Classifier.h5'.format(dataset, base_model_name))
 
-##
-new_model = Model(model.inputs, model.layers[-3].output)
-new_model.save('./model/{}/FineTune[{}]Backbone.h5'.format(dataset, base_model_name))
+# ##
+# new_model = Model(model.inputs, model.layers[-3].output)
+# new_model.save('./model/{}/FineTune[{}]Backbone.h5'.format(dataset, base_model_name))
 
 
 
