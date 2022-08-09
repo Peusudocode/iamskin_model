@@ -1,6 +1,0 @@
-[submodule "yolo"]
-	path = yolo
-	url = https://github.com/ultralytics/yolov5.git
-[submodule "ldl"]
-	path = ldl
-	url = https://github.com/xpwu95/LDL.git
