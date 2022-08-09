@@ -3,6 +3,7 @@ resource/
 model/
 *.tar
 ACNE04
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
