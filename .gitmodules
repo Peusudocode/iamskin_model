@@ -1,3 +1,6 @@
 [submodule "original"]
 	path = original
 	url = https://github.com/xpwu95/LDL.git
+[submodule "yolov5"]
+	path = yolov5
+	url = https://github.com/ultralytics/yolov5.git
