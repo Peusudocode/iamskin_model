@@ -6,6 +6,7 @@
   資訊
   
   - 準備 YOLOV5 的使用流程資訊
+  - 原 repository 來源 fork 當前版本
   - 預修改的[ LDL 原始碼][]路徑配置完成後發現無法執行（以修復錯誤）
   - 備份 source code 上來
 
