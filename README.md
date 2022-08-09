@@ -6,7 +6,7 @@
   資訊
   
   - 準備 YOLOV5 的使用流程資訊
-  - 預修改的[論文原始碼][]路徑配置完成後發現無法執行（以修復錯誤）
+  - 預修改的[LDL原始碼][]路徑配置完成後發現無法執行（以修復錯誤）
   - 備份 source code 上來
 
 - 2022/07/28
@@ -31,4 +31,4 @@
 
 [data]:https://drive.google.com/file/d/1F8VVsQAkibyMxJeHNrPrxViFP2lzzOZf/view?usp=sharing
 
-[論文原始碼]:https://github.com/xpwu95/LDL
+[LDL原始碼]:https://github.com/xpwu95/LDL
