@@ -4,3 +4,15 @@
 [submodule "yolov5"]
 	path = yolov5
 	url = https://github.com/ultralytics/yolov5.git
+[submodule "yolo"]
+	path = yolo
+	url = https://github.com/ultralytics/yolov5.git
+[submodule "origin paper source code"]
+	path = origin paper source code
+	url = https://github.com/xpwu95/LDL.git
+[submodule "LDL"]
+	path = LDL
+	url = https://github.com/xpwu95/LDL.git
+[submodule "ldl"]
+	path = ldl
+	url = https://github.com/xpwu95/LDL.git
