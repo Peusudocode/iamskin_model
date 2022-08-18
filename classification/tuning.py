@@ -1,23 +1,26 @@
 
+##
 ##  The packages.
 import os
 import pandas
 import numpy 
-# import tensorflow
 from sklearn import metrics
 from tensorflow import keras
 
+##
 ##  Constant of configuration.
-dataset = 'acne04-single'
-batch_size   = 32
+dataset    = 'acne04-single'
+batch_size = 32
 train_dir  = './resource/{}/train'.format(dataset)
 val_dir    = './resource/{}/validation'.format(dataset)
 test_dir   = './resource/{}/test'.format(dataset)
-image_shape      = (224, 224)
+image_shape    = (224, 224)
 epochs         = 10
 seen_class_num = 4
 class_name     = ['levle0', 'levle1', 'levle2', 'levle3']
+model_name     = "resnet"
 
+##
 ##  Create data generator function.
 def create_ImageDataGenerator(data_dir, batch_size, shuffle=True):
 
@@ -36,12 +39,14 @@ def create_ImageDataGenerator(data_dir, batch_size, shuffle=True):
 
     return(data_gen)
 
+##
 ##  Create data generator respectively.
 image_gen_train = create_ImageDataGenerator(data_dir = train_dir, batch_size=batch_size,shuffle=True)
 image_gen_val   = create_ImageDataGenerator(data_dir = val_dir  , batch_size=batch_size,shuffle=False)
 image_gen_test  = create_ImageDataGenerator(data_dir = test_dir , batch_size=batch_size,shuffle=False)
 
 ##
+##  Function about pretrained model.
 def create_model(pretrained_model='resnet'):
 
     if(pretrained_model=='resnet'):
@@ -59,8 +64,12 @@ def create_model(pretrained_model='resnet'):
     ##  使用 Densenet or InceptionV3, etc.
     return(model)
 
-model = create_model(pretrained_model='resnet')
+##
+##  Create a model.
+model = create_model(pretrained_model=model_name)
 
+##
+##  Fit the model.
 optimizer = keras.optimizers.Adam(
     learning_rate=0.0001, 
     beta_1=0.9, beta_2=0.999, 
@@ -71,11 +80,9 @@ model.compile(
     loss='categorical_crossentropy', 
     metrics=['accuracy']
 )
-
 early_stopping  = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-step_size_train = image_gen_train.n // image_gen_train.batch_size
-step_size_val  = image_gen_val.n // image_gen_val.batch_size
-
+# step_size_train = image_gen_train.n // image_gen_train.batch_size
+# step_size_val  = image_gen_val.n // image_gen_val.batch_size
 model.fit(
     image_gen_train,
     epochs = epochs,
@@ -83,6 +90,8 @@ model.fit(
     callbacks = [early_stopping]    
 )
 
+##
+##  Function about summary.
 def get_summary(image_gen):
 
     n_batches = len(image_gen)
@@ -93,21 +102,29 @@ def get_summary(image_gen):
     con_report = metrics.classification_report(y_true, y_score)
     return(con_matrix, con_report)
 
+##
+##  Validation result.
 val_con_matrix, val_con_report = get_summary(image_gen_val)
 print('-'*10, 'validation', '-'*10)
 print(val_con_matrix)
 print(val_con_report)
 
+##
+##  Test result.
 test_con_matrix, test_con_report = get_summary(image_gen_test)
 print('-'*10, 'test', '-'*10)
 print(test_con_matrix)
 print(test_con_report)
 
 ##
-base_model_name = "resnet"
-os.makedirs("./model/{}/".format(dataset), exist_ok=True)
-model.save('./model/{}/FineTune[{}]Classifier.h5'.format(dataset, base_model_name))
-backbone_layer_model = keras.Model(model.inputs, model.layers[-3].output)
-backbone_layer_model.save('./model/{}/FineTune[{}]Backbone.h5'.format(dataset, base_model_name))
+##  Store model.
+model_path = './classification/model/{}.h5'.format(model_name)
+os.makedirs(os.path.dirname(model_path), exist_ok=True)
+model.save(model_path)
 
-
+##
+##  Store backbone.
+model_path = './classification/model/backbone.h5'
+os.makedirs(os.path.dirname(model_path), exist_ok=True)
+backbone_model = keras.Model(model.inputs, model.layers[-3].output)
+backbone_model.save(model_path)
