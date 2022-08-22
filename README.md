@@ -1,19 +1,21 @@
 
 # 紀錄
 
+- 2022/08/16
+
+  資訊
+
+  - 簡化原始資料結構
+
 - 2022/08/03
-
-  - 尚未
-
-- 2022/07/28
   
   資訊
 
   - 說明使用 tensorflow 進行影像分類基礎訓練流程
   - 擷取物件影像並備份至 [data][] 位置
   - 資料對應至 **resource** 資料夾目錄底下
-  - 備註[原始資料][]連結
-  - 備註[原始資料副本][]連結
+  - [原始資料][]連結
+  - [原始資料副本][]連結
 
   To do
   
@@ -26,3 +28,5 @@
 [原始資料副本]:https://drive.google.com/drive/folders/1qIw18kBD5TEEfwZVFuv4Aey4kHPADxWv?usp=sharing
 
 [data]:https://drive.google.com/file/d/1F8VVsQAkibyMxJeHNrPrxViFP2lzzOZf/view?usp=sharing
+
+[]:
