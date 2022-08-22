@@ -2,6 +2,7 @@
 resource/
 model/
 *.tar
+*.h5
 *ACNE04/
 logs/
 

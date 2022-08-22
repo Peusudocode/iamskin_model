@@ -7,6 +7,7 @@
 ##
 import os
 import shutil
+import tqdm
 import numpy
 import pandas
 import PIL.Image
@@ -14,26 +15,26 @@ import xml.etree.ElementTree
 
 ##
 folder = 'resource/acne04-origin/'
-nest = os.path.join(folder, 'Classification/JPEGImages/')
+
+##
+nest = os.path.join(folder, 'ACNE04/Classification/JPEGImages/')
+destination = 'resource/acne04-default/jpg/'
 loop = os.listdir(nest)
-for i in loop:
+for i in tqdm.tqdm(loop, total=len(loop)):
 
     name = i.replace('levle', 'level')
     image = PIL.Image.open(os.path.join(nest, i))
-    destination = 'resource/acne04-default/jpg/'
     os.makedirs(destination, exist_ok=True)
     image.save(os.path.join(destination, name))
     continue
 
 ##
-nest = os.path.join(folder, 'Classification/')
+nest = os.path.join(folder, 'ACNE04/Classification/')
 destination = 'resource/acne04-default/'
 loop = [i for i in os.listdir(nest) if('txt' in i)]
-for i in loop: 
-    
-    shutil.copyfile(os.path.join(nest, i), os.path.join(destination, i))
-    continue
+_ = [shutil.copyfile(os.path.join(nest, i), os.path.join(destination, i)) or i in loop]
 
+##
 for i in loop:
 
     item = pandas.read_csv(os.path.join(destination, i), sep='\s+', header=None)
@@ -43,7 +44,7 @@ for i in loop:
     continue
 
 ##
-nest = os.path.join(folder, 'Detection/VOC2007/Annotations/')
+nest = os.path.join(folder, 'ACNE04/Detection/VOC2007/Annotations/')
 loop = os.listdir(nest)
 for i in  loop: 
     
