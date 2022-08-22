@@ -3,6 +3,8 @@ resource/
 model/
 *.tar
 *.h5
+*ACNE04/
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,7 @@
+[submodule "yolo"]
+	path = yolo
+	url = https://github.com/ultralytics/yolov5/tree/f5335f22bbd6037124d60edb3c2d1934d7673e23
+
+[submodule "ldl"]
+	path = ldl
+	url = https://github.com/xpwu95/LDL/tree/197f8d81ebc685d664eeb550e0b8620ca5b5a331
