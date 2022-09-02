@@ -52,7 +52,12 @@ class DatasetProcessing(Dataset):
         name = self.img_filename[index]
         label = torch.from_numpy(np.array(self.labels[index]))
         lesion = torch.from_numpy(np.array(self.lesions[index]))
+
+        ##  img: (3, 224, 224), --, image tensor
+        ##  label: --, 0, severity level tensor
+        ##  lesion: --, 8, lesion count tensor
         return img, label, lesion#, name
+
     def __len__(self):
         return len(self.img_filename)
 
